@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+    {% block content %}
+    <h1 align="center">{% block title %} {{ title }} {% endblock %}</h1>
+    <div class="list-group">
+        {% for x, list in data %}
+        <a href="{{ url_for('views.laporan_sopir', sopir=list) }}" class="list-group-item list-group-item-action">{{ list }}
+            <span class="badge badge-pill badge-danger pull-right">{{ x }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endblock %}

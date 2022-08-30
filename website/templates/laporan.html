@@ -1,0 +1,110 @@
+{% extends "base.html" %} {% block title %}Detail Laporan{% endblock %} 
+    {% block content %}
+    
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="container">
+          <div class="row">
+          <div class="col-sm-4">
+            <div class="content-section"><br/>
+              <table class="table table-striped table-hover">
+                <thead>
+              <tr>
+                <th colspan="2"><h3>Laporan {{ laporan.nopol }}</h2></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Tanggal Berangkat</th>
+                <td>{{ laporan.tgl_brgkt }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Tanggal Kembali</th>
+                <td>{{ laporan.tgl_kmbl }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Sopir</th>
+                <td>{{ laporan.sopir }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Tujuan</th>
+                <td><pre>{{ laporan.tujuan }}</pre></td>
+              </tr>
+              <tr>
+                <th scope="row">Keterangan</th>
+                <td><pre>{{ laporan.keterangan }}</pre></td>
+              </tr>
+              <tr>
+                <th scope="row">KM Awal</th>
+                <td>{{ laporan.km_awal }}</td>
+              </tr>
+              <tr>
+                <th scope="row">KM Isi</th>
+                <td>{{ laporan.km_isi }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Jarak</th>
+                <td>{{ laporan.km_isi-laporan.km_awal }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Isi Solar Awal</th>
+                <td>{{ laporan.solar_awal }}</td>
+              </tr>
+              <tr>
+                <th scope="row">E-Toll</th>
+                <td>{{ 'Rp. '+ laporan.e_toll|string }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Perbandingan</th>
+                <td>{% if laporan.solar_awal == 0 %}
+                  {{ '0' }}
+                {% else %}
+                  {{ '1 : ' + '%0.3f'|format((laporan.km_isi-laporan.km_awal)/laporan.solar_awal)|float|string }}
+                {% endif %}</td>
+              </tr>
+            </tbody>
+            </table>
+            </div>
+          {% if current_user %}
+            <div>
+              <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+            </div>
+            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Menghapus Laporan?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <form action="{{ url_for('views.delete_laporan', id=laporan.id) }}" method="POST">
+                      <input class="btn btn-danger" type="submit" value="Delete" >
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+          {% endif %}
+        </div>
+        
+      </div>
+      <div class="col-sm-">
+      </br>
+        {%if img %}
+        <ul class="list-group">
+          {% for list in img %}
+          <li class="list-group-item">
+          <img class="img-fluid" src="{{ list }}">
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      </div>
+      
+    </div>
+    </article>
+    {% endblock content %}
