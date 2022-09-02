@@ -5,6 +5,7 @@
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
+            
             <div class="form-group">
                 {{ form.nopol.label(class="form-control-label") }}
                 {% if form.nopol.errors %}
@@ -32,6 +33,19 @@
                 {% endif %}
             </div>
             <div class="form-group">
+                {{ form.satpam1.label(class="form-control-label") }}
+                {% if form.satpam1.errors %}
+                    {{ form.satpam1(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.satpam1.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.satpam1(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
                 {{ form.km_awal.label(class="form-control-label") }}
                 {% if form.km_awal.errors %}
                     {{ form.km_awal(class="form-control form-control-lg is-invalid") }}
@@ -42,32 +56,6 @@
                     </div>
                 {% else %}
                     {{ form.km_awal(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-            <div class="form-group">
-                {{ form.solar_awal.label(class="form-control-label") }}
-                {% if form.solar_awal.errors %}
-                    {{ form.solar_awal(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.solar_awal.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.solar_awal(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-            <div class="form-group">
-                {{ form.e_toll.label(class="form-control-label") }}
-                {% if form.e_toll.errors %}
-                    {{ form.e_toll(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.e_toll.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.e_toll(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
             <div class="form-group">

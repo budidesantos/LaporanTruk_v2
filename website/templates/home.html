@@ -2,10 +2,11 @@
     {% block content %}
     <h1 align="center">Daftar Laporan</h1>
     </br>
-      <table class="table table-striped-columns">
+    <div class="table-responsive-md" >
+      <table class="table table-sm table-hover" >
         <thead>
           <tr>
-            <th scope="col-4">Tgl Berangkat</th>
+            <th scope="col">Tgl Berangkat</th>
             <th scope="col">Nomor Polisi</th>
             <th scope="col">Sopir</th>
             <th scope="col">Rate</th>
@@ -14,7 +15,7 @@
       {% for list in laporan.items %}
         <tbody>
           <tr>
-            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.tgl_brgkt }}</a></td>
+            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.tgl_brgkt.date() }}</a></td>
             <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.nopol }}</a></td>
             <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.sopir }}</a></td>
             <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{% if list.solar_awal == 0 %}
@@ -25,28 +26,28 @@
             
           </tr>
         </tbody>
-      {% endfor %}
+        {% endfor %}
       </table>
-        <nav aria-label="Page navigation example">
-          <span>
-          <ul class="pagination justify-content-end">
-          {% if laporan.has_prev %}
-          <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.prev_num) }}">Previous</a></li>
-          {% endif %}
-          {% for page_num in laporan.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-            {% if page_num %}
-              {% if laporan.page == page_num %}
-              <li class="page-item active"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
-              {% else %}
-              <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
-              {% endif %}
-              {% else %}
-              <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">...</a></li>
+    </div>
+      <nav aria-label="Page navigation example">
+        <span>
+        <ul class="pagination justify-content-end">
+        {% if laporan.has_prev %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.prev_num) }}">Previous</a></li>
+        {% endif %}
+        {% for page_num in laporan.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+          {% if page_num %}
+            {% if laporan.page == page_num %}
+            <li class="page-item active"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
             {% endif %}
-          {% endfor %}
-          {% if laporan.has_next %}
-          <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.next_num) }}">Next</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">...</a></li>
           {% endif %}
-        </nav>
-
-    {% endblock %}
+        {% endfor %}
+        {% if laporan.has_next %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.next_num) }}">Next</a></li>
+        {% endif %}
+      </nav>
+  {% endblock %}

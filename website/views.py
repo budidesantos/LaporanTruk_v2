@@ -7,56 +7,53 @@ import io
 import os
 import secrets
 from PIL import Image
-from datetime import date
+from datetime import datetime
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, SubmitField, DateField, IntegerField, TextAreaField, DecimalField # , FieldList, FormField, HiddenField
+from wtforms import StringField, SubmitField, IntegerField, TextAreaField, DecimalField # , FieldList, FormField, HiddenField
 from wtforms.validators import DataRequired
 from . import db
-import json
 
 views = Blueprint('views', __name__)
-
-# class FormImage(FlaskForm):
-#     image =  FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'png'])])
 
 # Form untuk Laporan Berangkat(add & update)
 class FormBerangkat(FlaskForm):
     nopol = StringField('Nomor Polisi', validators=[DataRequired()])
     sopir = StringField('Nama Sopir', validators=[DataRequired()])
+    satpam1 = StringField('Nama Satpam', validators=[DataRequired()])
     km_awal = IntegerField('KM Awal', validators=[DataRequired()])
-    solar_awal = DecimalField('Solar Awal (L)', validators=[DataRequired()])
-    e_toll = IntegerField('E-Toll')
     tujuan = TextAreaField('Tujuan')
-    foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'png'])])
+    foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     submit = SubmitField('Submit')
 
 # Form untuk Laporan Kembali(add & update)
 class FormKembali(FlaskForm):
     nopol = StringField('Nomor Polisi', validators=[DataRequired()])
     sopir = StringField('Nama Sopir', validators=[DataRequired()])
+    satpam2 = StringField('Nama Satpam', validators=[DataRequired()])
     km_isi = IntegerField('KM Isi', validators=[DataRequired()])
     keterangan = TextAreaField('Keterangan')
     foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
 
-class FormIndex(FlaskForm):
-    index_ats = DateField('Dari Tanggal :', validators=[DataRequired()])
-    index_bwh = DateField('Sampai Tanggal :', validators=[DataRequired()])
-    submit = SubmitField('Confirm')
+# Form edit
+class LaporanAdmin(FlaskForm):
+    nopol = StringField('Nomor Polisi', validators=[DataRequired()])
+    sopir = StringField('Nama Sopir', validators=[DataRequired()])
+    km_awal = IntegerField('KM Awal', validators=[DataRequired()])
+    km_isi = IntegerField('KM Isi')
+    solar_awal = DecimalField('Solar Awal (L)')
+    e_toll = IntegerField('E-Toll')
+    tujuan = TextAreaField('Tujuan')
+    keterangan = TextAreaField('Keterangan')
+    foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Submit')
 
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
     page = request.args.get('page', 1, type=int)
-    list_laporan = Laporan.query.order_by(desc(Laporan.tgl_brgkt)).paginate(page = page, per_page=30)
-    # form_index = FormIndex()
-    # if form_index.validate_on_submit():
-    #     atas = form_index.index_ats.data()
-    #     bawah = form_index.index_bwh.data()
-    #     index_laporan = Laporan.query.filter(Laporan.tgl_brgkt<=atas, Laporan.tgl_brgkt >=bawah).order_by(desc(Laporan.tgl_brgkt)).paginate(page = page, per_page=30)
-        
-    #     return render_template("home.html", form = form_index, user=current_user, laporan=index_laporan)
+    list_laporan = Laporan.query.order_by(desc(Laporan.id)).paginate(page = page, per_page=30)
     return render_template("home.html", user=current_user, laporan=list_laporan)
 
 #detail laporan
@@ -67,7 +64,7 @@ def laporan(id):
     if ImageSet.query.filter(ImageSet.laporan_id==id):
         for list in ImageSet.query.filter(ImageSet.laporan_id==id):
             foto.append(url_for('static', filename='images/laporan_images/' + list.image))
-            print(foto)
+
     return render_template('laporan.html', user=current_user, laporan=laporan, img=foto)
 
 
@@ -77,7 +74,7 @@ def save_picture(form_picture):
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(views.root_path, 'static/images/laporan_images', picture_fn)
-    output_size = (480, 270)
+    output_size = (384, 216)
     
     i = Image.open(form_picture)
     i.thumbnail(output_size)
@@ -85,20 +82,18 @@ def save_picture(form_picture):
 
     return picture_fn
 
-#tambah laporan berangkat
-@views.route('/add-berangkat', methods=['GET', 'POST'])
+# tambah laporan berangkat
+@views.route('/add-berangkat', methods=['POST','GET'])
 @login_required
 def add_berangkat():
     form = FormBerangkat()
     if form.validate_on_submit():
         nopol = form.nopol.data.upper()
         sopir = form.sopir.data.upper()
+        satpam1 = form.satpam1.data.upper()
         km_awal = form.km_awal.data
-        solar_awal = form.solar_awal.data
-        e_toll = form.e_toll.data
         tujuan = form.tujuan.data
         file_foto = form.foto.data
-        print(file_foto)
         
         cek_nopol = Laporan.query.order_by(desc(Laporan.id)).filter_by(nopol=nopol).first()
             
@@ -107,7 +102,7 @@ def add_berangkat():
             if laporan.tgl_kmbl==None:
                 flash('Nomor polisi atau sopir sudah terdaftar di laporan berangkat dan belum kembali', category='error')          
             else:
-                new_post = Laporan(tgl_brgkt=date.today(), nopol=nopol, sopir=sopir, km_awal=km_awal, km_isi=0, solar_awal=solar_awal, e_toll=e_toll, tujuan=tujuan)
+                new_post = Laporan(tgl_brgkt=datetime.now().replace(microsecond=0), nopol=nopol, sopir=sopir, satpam1=satpam1, km_awal=km_awal, km_isi=0, solar_awal=0, e_toll=0, tujuan=tujuan)
                 db.session.add(new_post)
                 db.session.flush() #
                 if file_foto:
@@ -117,7 +112,7 @@ def add_berangkat():
                 db.session.commit()
                 return redirect(url_for('views.home'))
         else:
-            new_post = Laporan(tgl_brgkt=date.today(), nopol=nopol, sopir=sopir, km_awal=km_awal, km_isi=0, solar_awal=solar_awal, e_toll=e_toll, tujuan=tujuan)
+            new_post = Laporan(tgl_brgkt=datetime.now().replace(microsecond=0), nopol=nopol, sopir=sopir, satpam1=satpam1, km_awal=km_awal, km_isi=0, solar_awal=0, e_toll=0, tujuan=tujuan)
             db.session.add(new_post)
             db.session.flush() #
             if file_foto:
@@ -128,13 +123,15 @@ def add_berangkat():
             return redirect(url_for('views.home'))
     return render_template("add_brgkt.html", title="Tambah Laporan Truk Berangkat", form = form, user=current_user)
 
-@views.route('/add-kembali', methods=['GET', 'POST'])
+# tambah laporan kembali
+@views.route('/add-kembali', methods=['POST','GET'])
 @login_required
 def add_kembali():
     form = FormKembali()
     if form.validate_on_submit():
         nopol = form.nopol.data.upper()
         sopir = form.sopir.data.upper()
+        satpam2 = form.satpam2.data.upper()
         km_isi = form.km_isi.data
         keterangan = form.keterangan.data
         file_foto = form.foto.data
@@ -144,7 +141,8 @@ def add_kembali():
         if cek_nopol and cek_sopir:
             laporan = Laporan.query.get_or_404(cek_nopol.id)
             if laporan.tgl_kmbl==None:
-                laporan.tgl_kmbl = date.today()
+                laporan.satpam2 = satpam2
+                laporan.tgl_kmbl = datetime.now().replace(microsecond=0)
                 laporan.km_isi = km_isi
                 laporan.keterangan = keterangan
                 if file_foto:
@@ -156,8 +154,41 @@ def add_kembali():
             else:
                 flash(f'Error! Truk {cek_nopol.nopol} telah kembali', category='error')
         else:
-            flash('Error!', category='error')
+            flash('Error! Nopol/Nama Sopir tidak ada', category='error')
     return render_template("add_kmbl.html", title="Tambah Laporan Truk Kembali", form = form, user=current_user)
+
+@views.route('/laporan/<int:id>/update', methods=['GET', 'POST'])
+@login_required
+def update_laporan(id):
+    laporan = Laporan.query.get_or_404(id)
+    form = LaporanAdmin()
+    file_foto = form.foto.data
+    if form.validate_on_submit():
+        laporan.nopol = form.nopol.data.upper()
+        laporan.sopir = form.sopir.data.upper()
+        laporan.km_awal = form.km_awal.data
+        laporan.km_isi = form.km_isi.data
+        laporan.solar_awal = form.solar_awal.data
+        laporan.e_toll = form.e_toll.data
+        laporan.tujuan = form.tujuan.data
+        laporan.keterangan = form.keterangan.data
+        if file_foto:
+            foto = save_picture(file_foto)
+            new_foto = ImageSet(laporan_id=laporan.id, image= foto)
+            db.session.add(new_foto)
+        db.session.commit()
+        flash('Data laporan berhasil diupdate!', 'success')
+        return redirect(url_for('views.laporan', id=laporan.id))
+    elif request.method == 'GET':
+        form.nopol.data = laporan.nopol
+        form.sopir.data = laporan.sopir
+        form.km_awal.data = laporan.km_awal
+        form.km_isi.data = laporan.km_isi
+        form.solar_awal.data = laporan.solar_awal
+        form.e_toll.data = laporan.e_toll
+        form.tujuan.data = laporan.tujuan
+        form.keterangan.data = laporan.keterangan
+    return render_template('add_admin.html', title="Update Laporan", form = form, user=current_user)
 
 #hapus laporan
 @views.route('/laporan/<int:id>/delete', methods=['POST'])

@@ -1,4 +1,3 @@
-
 {% extends "home.html" %}
 {% block content %}
 <h1 align="center">{% block title %} {{ title }} {% endblock %}</h1>
@@ -34,16 +33,16 @@
                 {% endif %}
             </div>
             <div class="form-group">
-                {{ form.satpam2.label(class="form-control-label") }}
-                {% if form.satpam2.errors %}
-                    {{ form.satpam2(class="form-control form-control-lg is-invalid") }}
+                {{ form.km_awal.label(class="form-control-label") }}
+                {% if form.km_awal.errors %}
+                    {{ form.km_awal(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                        {% for error in form.satpam2.errors %}
+                        {% for error in form.km_awal.errors %}
                             <span>{{ error }}</span>
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.satpam2(class="form-control form-control-lg") }}
+                    {{ form.km_awal(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
             <div class="form-group">
@@ -57,6 +56,45 @@
                     </div>
                 {% else %}
                     {{ form.km_isi(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.solar_awal.label(class="form-control-label") }}
+                {% if form.solar_awal.errors %}
+                    {{ form.solar_awal(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.solar_awal.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.solar_awal(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.e_toll.label(class="form-control-label") }}
+                {% if form.e_toll.errors %}
+                    {{ form.e_toll(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.e_toll.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.e_toll(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.tujuan.label(class="form-control-label") }}
+                {% if form.tujuan.errors %}
+                    {{ form.tujuan(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.tujuan.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.tujuan(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
             <div class="form-group">
@@ -81,6 +119,7 @@
                         {% endfor %}
                     {% endif %}
             </div>
+
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-outline-info") }}

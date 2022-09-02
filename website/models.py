@@ -5,8 +5,8 @@ from sqlalchemy.sql import func
 
 class Laporan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tgl_brgkt = db.Column(db.Date())
-    tgl_kmbl = db.Column(db.Date())
+    tgl_brgkt = db.Column(db.DateTime())
+    tgl_kmbl = db.Column(db.DateTime())
     nopol = db.Column(db.String(100))
     sopir = db.Column(db.String(100))
     tujuan = db.Column(db.String(500))
@@ -16,6 +16,8 @@ class Laporan(db.Model):
     e_toll = db.Column(db.Integer)
     tujuan = db.Column(db.String(500))
     keterangan = db.Column(db.String(500))
+    satpam1 = db.Column(db.String(100))
+    satpam2 = db.Column(db.String(100))
     img = db.relationship('ImageSet', backref='laporan', lazy=True, uselist=True)
 
 class ImageSet(db.Model):
