@@ -1,0 +1,70 @@
+{% extends "base.html" %} {% block title %}App Laporan Truk{% endblock %} 
+    {% block content %}
+    <h1 align="center">Daftar Laporan</h1>
+    <br>
+    <form class="form-inline justify-content-end" method="POST">
+      <div class="form-group mb-2">
+        <label for="exampleInputEmail1">Tgl Atas</label>&nbsp;
+        <input type="date" class="form-control-sm" name="atas" id="atas">&nbsp;
+        <label for="exampleInputEmail1">Bawah</label>&nbsp;
+        <input type="date" class="form-control-sm" name="bawah" id="bawah">&nbsp;
+      </div>
+      <div class="form-group mx-3 mb-2">
+        <button type="submit" class="btn btn-outline-info btn-sm">Filter</button>
+      </div>
+    </form>
+
+    <div class="table-responsive-md" >
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th scope="col">Tgl Berangkat</th>
+            <th scope="col">Tgl Kembali</th>
+            <th scope="col">Nomor Polisi</th>
+            <th scope="col">Sopir</th>
+            <th scope="col">Rate</th>
+          </tr>
+        </thead>
+      {% for list in laporan.items %}
+        <tbody>
+          <tr>
+            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.tgl_brgkt.date() }}</a></td>
+            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">
+              {% if list.tgl_kmbl %}
+                {{ list.tgl_kmbl.date() }}
+                {% else %}-
+              {% endif %}</a></td>
+            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.nopol }}</a></td>
+            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.sopir }}</a></td>
+            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{% if list.solar_awal == 0 %}
+              -
+            {% else %}
+              {{ '1 : ' + '%0.2f'|format((list.km_isi-list.km_awal)/list.solar_awal)|float|string }}
+            {% endif %}</a></td>
+          </tr>
+        </tbody>
+        {% endfor %}
+      </table>
+    </div>
+      <nav aria-label="Page navigation example">
+        <span>
+        <ul class="pagination justify-content-end pagination-sm">
+        {% if laporan.has_prev %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.prev_num) }}">Previous</a></li>
+        {% endif %}
+        {% for page_num in laporan.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+          {% if page_num %}
+            {% if laporan.page == page_num %}
+            <li class="page-item active"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
+            {% endif %}
+            {% else %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">...</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if laporan.has_next %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.next_num) }}">Next</a></li>
+        {% endif %}
+      </nav>
+  {% endblock %}

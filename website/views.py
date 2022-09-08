@@ -1,3 +1,4 @@
+from urllib import response
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort, Response
 from flask_login import login_required, current_user
 from sqlalchemy import desc
@@ -7,10 +8,10 @@ import io
 import os
 import secrets
 from PIL import Image
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, SubmitField, IntegerField, TextAreaField, DecimalField # , FieldList, FormField, HiddenField
+from wtforms import StringField, SubmitField, IntegerField, TextAreaField, DecimalField, DateField # , FieldList, FormField, HiddenField
 from wtforms.validators import DataRequired
 from . import db
 
@@ -21,7 +22,7 @@ class FormBerangkat(FlaskForm):
     nopol = StringField('Nomor Polisi', validators=[DataRequired()])
     sopir = StringField('Nama Sopir', validators=[DataRequired()])
     satpam1 = StringField('Nama Satpam', validators=[DataRequired()])
-    km_awal = IntegerField('KM Awal', validators=[DataRequired()])
+    km_awal = IntegerField('KM Berangkat', validators=[DataRequired()])
     tujuan = TextAreaField('Tujuan')
     foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     submit = SubmitField('Submit')
@@ -31,7 +32,7 @@ class FormKembali(FlaskForm):
     nopol = StringField('Nomor Polisi', validators=[DataRequired()])
     sopir = StringField('Nama Sopir', validators=[DataRequired()])
     satpam2 = StringField('Nama Satpam', validators=[DataRequired()])
-    km_isi = IntegerField('KM Isi', validators=[DataRequired()])
+    km_isi = IntegerField('KM Kembali', validators=[DataRequired()])
     keterangan = TextAreaField('Keterangan')
     foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
@@ -40,8 +41,8 @@ class FormKembali(FlaskForm):
 class LaporanAdmin(FlaskForm):
     nopol = StringField('Nomor Polisi', validators=[DataRequired()])
     sopir = StringField('Nama Sopir', validators=[DataRequired()])
-    km_awal = IntegerField('KM Awal', validators=[DataRequired()])
-    km_isi = IntegerField('KM Isi')
+    km_awal = IntegerField('KM Berangkat', validators=[DataRequired()])
+    km_isi = IntegerField('KM Kembali')
     solar_awal = DecimalField('Solar Awal (L)')
     e_toll = IntegerField('E-Toll')
     tujuan = TextAreaField('Tujuan')
@@ -49,12 +50,91 @@ class LaporanAdmin(FlaskForm):
     foto = FileField('Tambahkan Foto', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
 
+class IndexForm(FlaskForm):
+    awal = DateField('Tgl Atas', validators=[DataRequired()])
+    akhir = DateField('Bawah', validators=[DataRequired()])
+    submit = SubmitField('Filter')
+
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-    page = request.args.get('page', 1, type=int)
-    list_laporan = Laporan.query.order_by(desc(Laporan.id)).paginate(page = page, per_page=30)
-    return render_template("home.html", user=current_user, laporan=list_laporan)
+    # page = request.args.get('page', 1, type=int)
+    # list_laporan = Laporan.query.order_by(desc(Laporan.id)).paginate(page = page, per_page=50)
+    return render_template("home.html", user=current_user)# , laporan=list_laporan)
+
+@views.route('/api/data')
+def data():
+    query = Laporan.query.order_by(desc(Laporan.id))
+
+    #search filter
+    search = request.args.get('search')
+    if search:
+        query = query.filter(db.or_(
+            Laporan.nopol.like(f'%{search}%'),
+            Laporan.sopir.like(f'%{search}%')
+        ))
+    total = query.count()
+
+    #sorting
+    sort = request.args.get('sort')
+    if sort:
+        order = []
+        for s in sort.split(','):
+            direction = s[0]
+            name = s[1:]
+            if name not in ['tgl_brgkt','nopol', 'sopir']:
+                name = 'id'
+            col = getattr(Laporan, name)
+            if direction == '-':
+                col = col.desc()
+            order.append(col)
+        if order:
+            query = query.order_by(*order)
+    
+    #pagination
+    start = request.args.get('start', type=int, default=-1)
+    length = request.args.get('length', type=int, default=-1)
+    if start != -1 and length != -1:
+        query = query.offset(start).limit(length)
+
+    #response
+    return {
+        'data': [laporan.to_dict() for laporan in query],
+        'total' : total}
+
+# @views.route('/api/data/filtered')
+# def filterd(tgl_atas, tgl_bwh):
+#     query = Laporan.query.order_by(desc(Laporan.id)).filter(Laporan.tgl_brgkt<=datetime.strptime(tgl_atas,"%Y-%m-%d")+timedelta(days=1), Laporan.tgl_brgkt>=tgl_bwh)
+    
+#     #search filter
+#     search = request.args.get('search')
+#     if search:
+#         query = query.filter(db.or_(
+#             Laporan.nopol.like(f'%{search}%'),
+#             Laporan.sopir.like(f'%{search}%')
+#         ))
+#     total = query.count()
+
+#     #search filter
+#     search = request.args.get('search')
+#     if search:
+#         query = query.filter(db.or_(
+#             Laporan.nopol.like(f'%{search}%'),
+#             Laporan.sopir.like(f'%{search}%')
+#         ))
+#     total = query.count()
+    
+#     #pagination
+#     start = request.args.get('start', type=int, default=-1)
+#     length = request.args.get('length', type=int, default=-1)
+#     if start != -1 and length != -1:
+#         query = query.offset(start).limit(length)
+
+#     #response
+#     return {
+#         'data': [laporan.to_dict() for laporan in query],
+#         'total' : total}
+
 
 #detail laporan
 @views.route('/laporan/<int:id>')
@@ -66,7 +146,6 @@ def laporan(id):
             foto.append(url_for('static', filename='images/laporan_images/' + list.image))
 
     return render_template('laporan.html', user=current_user, laporan=laporan, img=foto)
-
 
 # upload img
 def save_picture(form_picture):
@@ -100,7 +179,7 @@ def add_berangkat():
         if cek_nopol:
             laporan = Laporan.query.get_or_404(cek_nopol.id)
             if laporan.tgl_kmbl==None:
-                flash('Nomor polisi atau sopir sudah terdaftar di laporan berangkat dan belum kembali', category='error')          
+                flash('Error! Nomor Polisi/Sopir belum kembali', category='error')          
             else:
                 new_post = Laporan(tgl_brgkt=datetime.now().replace(microsecond=0), nopol=nopol, sopir=sopir, satpam1=satpam1, km_awal=km_awal, km_isi=0, solar_awal=0, e_toll=0, tujuan=tujuan)
                 db.session.add(new_post)
@@ -238,14 +317,12 @@ def get_sopir_list():
     data = sorted(zip(jum_list, list_sopir), key = lambda x: (-x[0], x[1]))
     return render_template('list_sopir.html', title="List Sopir",  data=data, user=current_user)
 
-
-
 #list laporan berdasarkan nopol
 @views.route('/nopol/<nopol>', methods=['GET'])
 @login_required
 def laporan_nopol(nopol):
     page = request.args.get('page', 1, type=int)
-    list_laporan = Laporan.query.filter(Laporan.nopol==nopol).order_by(desc(Laporan.tgl_brgkt)).paginate(page = page, per_page=20)
+    list_laporan = Laporan.query.filter(Laporan.nopol==nopol).order_by(desc(Laporan.tgl_brgkt)).paginate(page = page, per_page=50)
     return render_template("home.html", user=current_user, laporan=list_laporan)
 
 #list laporan berdasarkan sopir
@@ -253,7 +330,7 @@ def laporan_nopol(nopol):
 @login_required
 def laporan_sopir(sopir):
     page = request.args.get('page', 1, type=int)
-    list_laporan = Laporan.query.filter(Laporan.sopir==sopir).order_by(desc(Laporan.tgl_brgkt)).paginate(page = page, per_page=20)
+    list_laporan = Laporan.query.filter(Laporan.sopir==sopir).order_by(desc(Laporan.tgl_brgkt)).paginate(page = page, per_page=50)
     return render_template("home.html", user=current_user, laporan=list_laporan)
 
 # # download Laporan to excel
