@@ -58,14 +58,47 @@ class IndexForm(FlaskForm):
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
+    if request.method == "POST":
+        tgl_ats = request.form.get('atas')
+        tgl_bwh = request.form.get('bawah')
+        if tgl_ats and tgl_bwh:
+            return render_template('filter.html', user=current_user, atas=datetime.strptime(tgl_ats,"%Y-%m-%d")+ timedelta(days=1), bawah=tgl_bwh )
+    #         laporan = Laporan.query.order_by(desc(Laporan.id)).filter(Laporan.tgl_brgkt<=tgl_ats, Laporan.tgl_kmbl>=tgl_bwh)
+    # data(laporan)
     # page = request.args.get('page', 1, type=int)
     # list_laporan = Laporan.query.order_by(desc(Laporan.id)).paginate(page = page, per_page=50)
     return render_template("home.html", user=current_user)# , laporan=list_laporan)
 
+# API data table
 @views.route('/api/data')
 def data():
     query = Laporan.query.order_by(desc(Laporan.id))
 
+    #search filter
+    search = request.args.get('search')
+    if search:
+        query = query.filter(db.or_(
+            Laporan.nopol.like(f'%{search}%'),
+            Laporan.sopir.like(f'%{search}%')
+        ))
+    total = query.count()
+
+    #pagination
+    start = request.args.get('start', type=int, default=-1)
+    length = request.args.get('length', type=int, default=-1)
+    if start != -1 and length != -1:
+        query = query.offset(start).limit(length)
+
+    #response
+    return {
+        'data': [laporan.to_dict() for laporan in query],
+        'total' : total}
+
+# API untuk data filter
+@views.route('api/data/date_from/<atas>/date_to/<bawah>', methods=['GET', 'POST'])
+def filtered_data(atas, bawah):
+    query = Laporan.query.order_by(desc(Laporan.id)).filter(Laporan.tgl_brgkt<=atas, Laporan.tgl_brgkt>=bawah)
+    
     #search filter
     search = request.args.get('search')
     if search:
@@ -101,40 +134,6 @@ def data():
     return {
         'data': [laporan.to_dict() for laporan in query],
         'total' : total}
-
-# @views.route('/api/data/filtered')
-# def filterd(tgl_atas, tgl_bwh):
-#     query = Laporan.query.order_by(desc(Laporan.id)).filter(Laporan.tgl_brgkt<=datetime.strptime(tgl_atas,"%Y-%m-%d")+timedelta(days=1), Laporan.tgl_brgkt>=tgl_bwh)
-    
-#     #search filter
-#     search = request.args.get('search')
-#     if search:
-#         query = query.filter(db.or_(
-#             Laporan.nopol.like(f'%{search}%'),
-#             Laporan.sopir.like(f'%{search}%')
-#         ))
-#     total = query.count()
-
-#     #search filter
-#     search = request.args.get('search')
-#     if search:
-#         query = query.filter(db.or_(
-#             Laporan.nopol.like(f'%{search}%'),
-#             Laporan.sopir.like(f'%{search}%')
-#         ))
-#     total = query.count()
-    
-#     #pagination
-#     start = request.args.get('start', type=int, default=-1)
-#     length = request.args.get('length', type=int, default=-1)
-#     if start != -1 and length != -1:
-#         query = query.offset(start).limit(length)
-
-#     #response
-#     return {
-#         'data': [laporan.to_dict() for laporan in query],
-#         'total' : total}
-
 
 #detail laporan
 @views.route('/laporan/<int:id>')

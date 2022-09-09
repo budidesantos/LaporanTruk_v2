@@ -15,56 +15,64 @@
     </form>
 
     <div class="table-responsive-md" >
-      <table class="table table-sm table-hover">
-        <thead>
-          <tr>
-            <th scope="col">Tgl Berangkat</th>
-            <th scope="col">Tgl Kembali</th>
-            <th scope="col">Nomor Polisi</th>
-            <th scope="col">Sopir</th>
-            <th scope="col">Rate</th>
-          </tr>
-        </thead>
-      {% for list in laporan.items %}
-        <tbody>
-          <tr>
-            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.tgl_brgkt.date() }}</a></td>
-            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">
-              {% if list.tgl_kmbl %}
-                {{ list.tgl_kmbl.date() }}
-                {% else %}-
-              {% endif %}</a></td>
-            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.nopol }}</a></td>
-            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{{ list.sopir }}</a></td>
-            <td><a href="{{ url_for('views.laporan', id=list.id) }}" class="link-dark">{% if list.solar_awal == 0 %}
-              -
-            {% else %}
-              {{ '1 : ' + '%0.2f'|format((list.km_isi-list.km_awal)/list.solar_awal)|float|string }}
-            {% endif %}</a></td>
-          </tr>
-        </tbody>
-        {% endfor %}
-      </table>
+      <div id="table"></div>
+      <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+      <script>
+        
+        const tableDiv = document.getElementById('table');
+  
+        const updateUrl = (prev, query) => {
+          return prev + (prev.indexOf('?') >= 0 ? '&' : '?') + new URLSearchParams(query).toString();
+        };
+
+        new gridjs.Grid({
+          columns: [
+            { id: 'id', 'hidden': true },
+            { id: 'tgl_brgkt', name: 'Tgl Berangkat', formatter: (cell, row) => {
+            return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
+            { id: 'tgl_kmbl', name: 'Tgl Kembali', formatter: (cell, row) => {
+            return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
+            { id: 'nopol', name: 'Nopol', formatter: (cell, row) => {
+            return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
+            { id: 'sopir', name: 'Sopir', formatter: (cell, row) => {
+            return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
+            { id: 'rate', name: 'Rate', formatter: (cell, row) => {
+            return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
+            
+          ],
+          
+          server: {
+            url: 'api/data/date_from/{{atas}}/date_to/{{bawah}}',
+            then: results => results.data,
+            total: results => results.total,
+          },
+          style: { 
+            table: {  
+              'width': 1200,
+              'autoWidth' : true
+            }
+
+          },
+          search: {
+            enabled: true,
+            server: {
+              url: (prev, search) => {
+                return updateUrl(prev, {search});
+              },
+            },
+          },
+          
+          pagination: {
+            enabled: true,
+            server: {
+              url: (prev, page, limit) => {
+                return updateUrl(prev, {start: page * limit, length: limit});
+              },
+            },
+          },
+        }).render(tableDiv);
+  
+      </script>
+
     </div>
-      <nav aria-label="Page navigation example">
-        <span>
-        <ul class="pagination justify-content-end pagination-sm">
-        {% if laporan.has_prev %}
-        <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.prev_num) }}">Previous</a></li>
-        {% endif %}
-        {% for page_num in laporan.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-          {% if page_num %}
-            {% if laporan.page == page_num %}
-            <li class="page-item active"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
-            {% else %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a></li>
-            {% endif %}
-            {% else %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=page_num) }}">...</a></li>
-          {% endif %}
-        {% endfor %}
-        {% if laporan.has_next %}
-        <li class="page-item"><a class="page-link" href="{{ url_for('views.home', page=laporan.next_num) }}">Next</a></li>
-        {% endif %}
-      </nav>
   {% endblock %}

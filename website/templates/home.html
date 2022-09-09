@@ -49,7 +49,7 @@
           style: { 
             table: {  
               'width': 1200,
-              'autoWidth' : 'true'
+              'autoWidth' : true
             }
 
           },
@@ -61,17 +61,7 @@
               },
             },
           },
-          sort: {
-            enabled: true,
-            multiColumn: true,
-            server: {
-              url: (prev, columns) => {
-                const columnIds = ['tgl_brgkt', 'nopol', 'sopir'];
-                const sort = columns.map(col => (col.direction === 1 ? '+' : '-') + columnIds[col.index]);
-                return updateUrl(prev, {sort});
-              },
-            },
-          },
+          
           pagination: {
             enabled: true,
             server: {

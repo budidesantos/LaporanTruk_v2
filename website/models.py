@@ -23,8 +23,8 @@ class Laporan(db.Model):
     def to_dict(self):
         return {
             'id' : self.id,
-            'tgl_brgkt' : self.tgl_brgkt.strftime("%d/%m/%Y"),
-            'tgl_kmbl' : self.tgl_kmbl.strftime("%d/%m/%Y") if self.tgl_kmbl else '-',
+            'tgl_brgkt' : self.tgl_brgkt.strftime("%d-%m-%Y"),
+            'tgl_kmbl' : self.tgl_kmbl.strftime("%d-%m-%Y") if self.tgl_kmbl else '-',
             'nopol' : self.nopol,
             'sopir' : self.sopir,
             'rate' : ('1:'+ str("{:10.2f}".format((self.km_isi-self.km_awal)/self.solar_awal))) if self.solar_awal else '-' ,
