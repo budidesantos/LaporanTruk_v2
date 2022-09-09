@@ -14,7 +14,7 @@
       </div>
     </form>
 
-    <div class="table-responsive-md" >
+    <div class="table-responsive" >
       <div id="table"></div>
       <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
       <script>
@@ -47,11 +47,11 @@
             total: results => results.total,
           },
           style: { 
-            table: {  
-              'width': 1200,
-              'autoWidth' : true
-            }
-
+            table: {
+              'min-width': '100%',
+              'autowidth': true,
+              'font-size': '15px',
+            },
           },
           search: {
             enabled: true,
