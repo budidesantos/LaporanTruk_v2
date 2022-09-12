@@ -4,10 +4,10 @@
     <br>
     <form class="form-inline justify-content-end" method="POST">
       <div class="form-group mb-2">
-        <label for="exampleInputEmail1">Tgl Atas</label>&nbsp;
-        <input type="date" class="form-control-sm" name="atas" id="atas">&nbsp;
-        <label for="exampleInputEmail1">Bawah</label>&nbsp;
+        <label for="btsbwh">Dari Tgl</label>&nbsp;
         <input type="date" class="form-control-sm" name="bawah" id="bawah">&nbsp;
+        <label for="btsatas">Sampai</label>&nbsp;
+        <input type="date" class="form-control-sm" name="atas" id="atas">&nbsp;
       </div>
       <div class="form-group mx-3 mb-2">
         <button type="submit" class="btn btn-outline-info btn-sm">Filter</button>
@@ -28,9 +28,9 @@
         new gridjs.Grid({
           columns: [
             { id: 'id', 'hidden': true },
-            { id: 'tgl_brgkt', name: 'Tgl Berangkat', formatter: (cell, row) => {
+            { id: 'tgl_brgkt', name: 'Waktu Berangkat', formatter: (cell, row) => {
             return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
-            { id: 'tgl_kmbl', name: 'Tgl Kembali', formatter: (cell, row) => {
+            { id: 'tgl_kmbl', name: 'Waktu Kembali', formatter: (cell, row) => {
             return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
             { id: 'nopol', name: 'Nopol', formatter: (cell, row) => {
             return gridjs.html('<a href="/laporan/' + row.cells[0].data + '">' + cell + '</a>')}},
@@ -47,11 +47,11 @@
             total: results => results.total,
           },
           style: { 
-            table: {  
-              'width': 1200,
-              'autoWidth' : true
-            }
-
+            table: {
+              'min-width': '100%',
+              'autowidth': true,
+              'font-size': '15px',
+            },
           },
           search: {
             enabled: true,

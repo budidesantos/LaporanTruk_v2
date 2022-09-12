@@ -11,7 +11,7 @@ class Laporan(db.Model):
     sopir = db.Column(db.String(100))
     tujuan = db.Column(db.String(500))
     km_awal = db.Column(db.Integer)
-    km_isi = db.Column(db.Integer)
+    km_isi = db.Column(db.Integer)  # KM Kembali
     solar_awal = db.Column(db.Float)
     e_toll = db.Column(db.Integer)
     tujuan = db.Column(db.String(500))
